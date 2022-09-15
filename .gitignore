@@ -1,0 +1,15 @@
+#.DS_Store
+.DS_Store
+
+#json
+**/**/*.json
+
+#cache
+__pycache__/
+
+#ide
+.idea
+.vscode
+
+#directories
+shortened-url/**
