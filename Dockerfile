@@ -4,7 +4,7 @@ WORKDIR /home/locust
 
 RUN mkdir -p /home/locust/shortened-urls/
 
-ADD shortened-url.py /home/locust/
+ADD shortened-url-maintainer.py /home/locust/
 ADD .env /home/locust/
 
 
@@ -14,4 +14,4 @@ RUN pip install pyjwt
 EXPOSE 8089
 
 #For run user test
-ENTRYPOINT ["locust", "-f", "./shortened-url.py"]
+ENTRYPOINT ["locust", "-f", "./shortened-url-redirector.py"]

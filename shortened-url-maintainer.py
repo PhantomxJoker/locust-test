@@ -15,7 +15,6 @@ class ShortenedUrl(HttpUser):
     host = os.environ.get('api-host')
     path_base = os.environ.get('path-base')
     shortened_url_path = os.environ.get('path-shortened-urls')
-    print(shortened_url_path)
 
     def randomFromFile(self, instance = "shortened-urls"):
         try:
@@ -38,7 +37,7 @@ class ShortenedUrl(HttpUser):
         except ValueError as err:
             return "error deleteFromFile" + err.args
 
-    @task(2)
+    @task(1)
     def removeShortenedUrl(self):
         shortened_info = self.randomFromFile("shortened-urls")
         if shortened_info != 0:
@@ -46,11 +45,35 @@ class ShortenedUrl(HttpUser):
             shortened_array = str(shortened_info).split(";")
             shortened_id = shortened_array[2]
 
-            rs = self.client.delete("shortened_urls/{0}".format(shortened_id),
+            rs = self.client.delete("/shortened_urls/{0}".format(shortened_id),
             headers=headers,
             name="/removeShortenedUrl")
             if rs.status_code == 200:
                 self.deleteFromFile(shortened_id, "shortened-urls")
+
+    @task(1)
+    def editShortenedUrl(self):
+        shortened_info = self.randomFromFile("shortened-urls")
+        if shortened_info != 0:
+            headers = { "Content-Type": "application/json" }
+            shortened_array = str(shortened_info).split(";")
+            shortened_id = shortened_array[2]
+
+            rs = self.client.patch("/shortened_urls/{0}".format(shortened_id), json = {
+                "url": "https://www.google.com",
+                "name": "Edited",
+                "enabled": True
+            },
+            headers=headers,
+            name="/editShortenedUrl")
+
+    @task(2)
+    def getPaginatedShortenedUrls(self):
+        headers = { "Content-Type": "application/json" }
+
+        rs = self.client.get("/shortened-urls?page=1&limit=10",
+        headers=headers,
+        name="/getPaginatedShortenedUrls")
 
     @task(3)
     def getShortenedUrlById(self):
@@ -60,33 +83,9 @@ class ShortenedUrl(HttpUser):
             shortened_array = str(shortened_info).split(";")
             shortened_id = shortened_array[2]
 
-            rs = self.client.get("shortened_urls/{0}".format(shortened_id),
+            rs = self.client.get("/shortened_urls/{0}".format(shortened_id),
             headers=headers,
             name="/getShortenedUrlById")
-
-    @task(3)
-    def editShortenedUrl(self):
-        shortened_info = self.randomFromFile("shortened-urls")
-        if shortened_info != 0:
-            headers = { "Content-Type": "application/json" }
-            shortened_array = str(shortened_info).split(";")
-            shortened_id = shortened_array[2]
-
-            rs = self.client.patch("shortened_urls/{0}".format(shortened_id), json = {
-                "url": "https://www.google.com",
-                "name": "Edited",
-                "enabled": True
-            },
-            headers=headers,
-            name="/editShortenedUrl")
-
-    @task(5)
-    def getPaginatedShortenedUrls(self):
-        headers = { "Content-Type": "application/json" }
-
-        rs = self.client.get("/shortened-urls?page=1&limit=10",
-        headers=headers,
-        name="/getPaginatedShortenedUrls")
 
     @task(5)
     def createShortenedUrl(self):
